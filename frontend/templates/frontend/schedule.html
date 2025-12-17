@@ -1,0 +1,39 @@
+{% extends 'frontend/base.html' %}
+{% block content %}
+
+<h2>Match Schedule</h2>
+
+<select onchange="loadMatches(this.value)">
+  <option value="">All</option>
+  <option value="scheduled">Scheduled</option>
+  <option value="completed">Completed</option>
+</select>
+
+<div id="schedule"></div>
+
+<script>
+const token = localStorage.getItem("access_token");
+
+async function loadMatches(status="") {
+  let url = "/api/matches/";
+  if (status) url += `?status=${status}`;
+
+  const matches = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(r => r.json());
+
+  schedule.innerHTML = matches.map(m => `
+    <div class="card">
+      <div class="match-players">
+        ${m.player1_details.name} vs ${m.player2_details.name}
+      </div>
+      <div class="match-meta">${m.tournament_name}</div>
+      <div class="match-status">${m.status}</div>
+    </div>
+  `).join("");
+}
+
+loadMatches();
+</script>
+
+{% endblock %}

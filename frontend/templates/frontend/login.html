@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <style>
+    body {
+      background: #0f766e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .box {
+      background: white;
+      padding: 30px;
+      width: 350px;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+
+<body>
+<div class="box">
+  <h2>Tennis Tracker</h2>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <p id="error" style="color:red"></p>
+  <p style="text-align:center; margin-top:12px;">
+  New user?
+  <a href="/register/">Create an account</a>
+</p>
+</div>
+
+<script>
+async function login() {
+  const res = await fetch("/api/auth/jwt/create/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value
+    })
+  });
+
+  const data = await res.json();
+  if (data.access) {
+    localStorage.setItem("access_token", data.access);
+    window.location.href = "/";
+  } else {
+    error.innerText = "Invalid credentials";
+  }
+}
+</script>
+</body>
+</html>

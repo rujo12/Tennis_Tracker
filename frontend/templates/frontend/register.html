@@ -1,0 +1,50 @@
+{% extends 'frontend/base.html' %}
+{% block content %}
+
+<div style="max-width: 420px; margin: 60px auto;">
+  <div class="card">
+    <h2 style="text-align:center;">Create Account</h2>
+
+    <input id="username" placeholder="Username">
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <input id="password2" type="password" placeholder="Confirm Password">
+
+    <button style="width:100%; margin-top:10px;" onclick="register()">
+      Register
+    </button>
+
+    <p style="text-align:center; margin-top:12px;">
+      Already have an account?
+      <a href="/login/">Login</a>
+    </p>
+
+    <p id="error" style="color:red; text-align:center;"></p>
+  </div>
+</div>
+
+<script>
+async function register() {
+  const res = await fetch("/api/auth/users/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: username.value,
+      email: email.value,
+      password: password.value,
+      re_password: password2.value
+    })
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    alert("Registration successful. Please login.");
+    window.location.href = "/login/";
+  } else {
+    error.innerText = JSON.stringify(data);
+  }
+}
+</script>
+
+{% endblock %}

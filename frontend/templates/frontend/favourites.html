@@ -1,0 +1,75 @@
+{% extends 'frontend/base.html' %}
+{% block content %}
+
+<h2>Favourite Players</h2>
+
+<input id="search" placeholder="Search players">
+
+<h3>All Players</h3>
+<div id="players"></div>
+
+<h3>My Favourites</h3>
+<div id="favs"></div>
+
+<script>
+const token = localStorage.getItem("access_token");
+if (!token) window.location.href = "/login/";
+
+const playersDiv = document.getElementById("players");
+const favsDiv = document.getElementById("favs");
+
+async function searchPlayers(q = "") {
+  const res = await fetch(`/api/players/?search=${q}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const players = await res.json();
+
+  playersDiv.innerHTML = players.length === 0
+    ? "<div class='card'>No players found</div>"
+    : players.map(p => `
+        <div class="card">
+          <b>${p.name}</b> (${p.country})
+          <button style="float:right" onclick="addFavourite(${p.id})">
+            Add ⭐
+          </button>
+        </div>
+      `).join("");
+}
+
+async function addFavourite(id) {
+  const res = await fetch("/api/favourites/", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ player: id })
+  });
+
+  loadFavourites();
+}
+
+async function loadFavourites() {
+  const res = await fetch("/api/favourites/", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const favs = await res.json();
+
+  favsDiv.innerHTML = favs.length === 0
+    ? "<div class='card'>No favourite players</div>"
+    : favs.map(f =>
+        `<div class="card">⭐ ${f.player_details.name}</div>`
+      ).join("");
+}
+
+document.getElementById("search").addEventListener("input", e =>
+  searchPlayers(e.target.value)
+);
+
+searchPlayers();
+loadFavourites();
+</script>
+
+{% endblock %}

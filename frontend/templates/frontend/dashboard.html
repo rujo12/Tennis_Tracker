@@ -1,0 +1,62 @@
+{% extends 'frontend/base.html' %}
+{% block content %}
+
+<h2>Dashboard</h2>
+<p id="welcome"></p>
+
+<div class="stats">
+  <div class="stat-card">
+    Favourite Players
+    <div class="stat-value" id="favCount">0</div>
+  </div>
+  <div class="stat-card">
+    Upcoming Matches
+    <div class="stat-value" id="matchCount">0</div>
+  </div>
+</div>
+
+<h3>Upcoming Matches</h3>
+<div id="matches"></div>
+
+<script>
+const token = localStorage.getItem("access_token");
+
+async function loadDashboard() {
+  const user = await fetch("/api/users/me/", {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(r => r.json());
+
+  welcome.innerText = `Welcome, ${user.username}`;
+
+  if (user.is_superuser) {
+    matches.innerHTML = "<div class='card'>Admin has no personal schedule.</div>";
+    return;
+  }
+
+  const favs = await fetch("/api/favourites/", {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(r => r.json());
+
+  favCount.innerText = favs.length;
+
+  const matchesData = await fetch("/api/matches/my_schedule/", {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(r => r.json());
+
+  matchCount.innerText = matchesData.length;
+
+  matches.innerHTML = matchesData.map(m => `
+    <div class="card">
+      <div class="match-players">
+        ${m.player1_details.name} vs ${m.player2_details.name}
+      </div>
+      <div class="match-meta">${m.tournament_name}</div>
+      <div class="match-status">${m.status}</div>
+    </div>
+  `).join("");
+}
+
+loadDashboard();
+</script>
+
+{% endblock %}
